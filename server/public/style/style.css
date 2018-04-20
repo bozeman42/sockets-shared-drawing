@@ -1,5 +1,9 @@
 .userDiv {
   position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: red;
+  border-radius: 50%;
 }
 
 body,html{

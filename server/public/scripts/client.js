@@ -38,7 +38,6 @@ window.addEventListener('load', () => {
       let element = document.createElement('div');
       element.classList.add('userDiv');
       element.id = data.id;
-      element.textContent = data.id;
       document.body.appendChild(element);
       ctx.move
     } else {
