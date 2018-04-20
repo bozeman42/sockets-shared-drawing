@@ -21,6 +21,7 @@ io.on('connection', socket => {
 
   socket.on('disconnect',() => {
     clients--;
+    // emit a disconnection event from server. on client delete the indicator div for that ID
     io.sockets.emit('newClientConnection',{description: 'A client disconnected. ' + clients+ ' clients connected!'});
     console.log('A user disconnected');
   })

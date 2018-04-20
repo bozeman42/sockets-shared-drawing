@@ -53,3 +53,5 @@ window.addEventListener('load', () => {
     }
   })
 })
+
+// to do: remove indicator div when a client disconnects
