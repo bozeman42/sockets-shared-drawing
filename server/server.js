@@ -12,11 +12,13 @@ let roomNumber = 1;
 io.on('connection', socket => {
   clients++;
   console.log('A user connected.');
-  socket.emit('newClientConnection',{description: `Welcome! There are ${clients} clients connected!`})
+  socket.emit('newClientConnection',{description: `Welcome! There are ${clients} clients connected!`,id: socket.id});
   socket.broadcast.emit('newClientConnection',{description: clients + ' clients connected!'});
+
   socket.on('mouse-time',data => {
-    console.log(`x: ${data.x}, y: ${data.y}`);
+    socket.broadcast.emit('mouseMove',{...data,id: socket.id});
   })
+
   socket.on('disconnect',() => {
     clients--;
     io.sockets.emit('newClientConnection',{description: 'A client disconnected. ' + clients+ ' clients connected!'});
