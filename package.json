@@ -2,9 +2,10 @@
   "name": "sockets-test",
   "version": "1.0.0",
   "description": "A project to learn sockets",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server/server.js"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/bozeman42/sockets-test/issues"
   },
-  "homepage": "https://github.com/bozeman42/sockets-test#readme"
+  "homepage": "https://github.com/bozeman42/sockets-test#readme",
+  "dependencies": {
+    "express": "^4.16.3",
+    "lodash": "^4.17.5",
+    "socket.io": "^2.1.0"
+  }
 }
