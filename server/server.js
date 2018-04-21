@@ -3,7 +3,11 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-const PORT = 5000;
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').load();
+}
+
+const PORT = process.env.PORT || 5000;
 
 let clients = 0;
 let roomNumber = 1;

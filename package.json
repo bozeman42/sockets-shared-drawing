@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/bozeman42/sockets-test#readme",
   "dependencies": {
+    "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "lodash": "^4.17.5",
     "socket.io": "^2.1.0"

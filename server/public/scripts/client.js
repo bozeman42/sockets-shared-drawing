@@ -17,7 +17,7 @@ window.addEventListener('load', () => {
       y: event.clientY / window.innerHeight
     })
     if (drawing) {
-      ctx.lineTo(event.clientX,event.clientY);
+      ctx.quadraticCurveTo(event.clientX,event.clientY);
       ctx.stroke();
     } else {
       ctx.moveTo(event.clientX,event.clientY);
@@ -32,6 +32,7 @@ window.addEventListener('load', () => {
   console.log('script run...');
   userCtx = {};
   socket.on('mouseMove', data => {
+    console.table(otherUsers);
     if (!otherUsers[data.id]) {
       otherUsers[data.id] = data;
       userCtx[data.id] = canvas.getContext('2d');
@@ -39,13 +40,12 @@ window.addEventListener('load', () => {
       element.classList.add('userDiv');
       element.id = data.id;
       document.body.appendChild(element);
-      ctx.move
     } else {
       otherUser = document.querySelector(`#${data.id}`);
       otherUser.style.top = `${Math.round(data.y * window.innerHeight)}px`;
       otherUser.style.left = `${Math.round(data.x * window.innerWidth)}px`;
       if (data.drawing) {
-        userCtx[data.id].lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+        userCtx[data.id].quadraticCurveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
         userCtx[data.id].stroke();
       } else {
         userCtx[data.id].moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
