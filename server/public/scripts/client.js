@@ -44,6 +44,7 @@ window.addEventListener('load', () => {
       let element = document.createElement('div');
       element.classList.add('userDiv');
       element.id = ID_PREFIX + data.id;
+      element.style.backgroundColor = `rgb(${Math.round(256 * Math.random())},${Math.round(256 * Math.random())},${Math.round(256 * Math.random())})`;
       document.body.appendChild(element);
     } else {
       otherUser = document.querySelector(`#${ID_PREFIX + data.id}`);
@@ -58,5 +59,3 @@ window.addEventListener('load', () => {
     }
   })
 })
-
-// to do: remove indicator div when a client disconnects
