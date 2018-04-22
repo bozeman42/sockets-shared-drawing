@@ -10,8 +10,6 @@ if (process.env.NODE_ENV !== 'production') {
 const PORT = process.env.PORT || 5000;
 
 let clients = 0;
-let roomNumber = 1;
-
 
 io.on('connection', socket => {
   clients++;
@@ -26,7 +24,7 @@ io.on('connection', socket => {
   socket.on('disconnect',() => {
     clients--;
     // emit a disconnection event from server. on client delete the indicator div for that ID
-    io.sockets.emit('newClientConnection',{description: 'A client disconnected. ' + clients+ ' clients connected!'});
+    io.sockets.emit('clientDisconnect',{description: 'A client disconnected. ' + clients+ ' clients connected!',id: socket.id});
     console.log('A user disconnected');
   })
 
