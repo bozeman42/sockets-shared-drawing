@@ -45,11 +45,10 @@ window.addEventListener('load', () => {
   let userCtx = {};
   let userDrawingState = {};
   socket.on('newClientConnection', data => {
-    console.log(data);
+    console.log(data.drawingData.length);
     let colors = data.clientColors;
     clientColor = data.clientColors[data.id];
     data.drawingData.forEach(data => {
-      console.log(data);
       if (!userCtx[data.id]) {
         userDrawingState[data.id] = false;
         userCtx[data.id] = canvas.getContext('2d');
