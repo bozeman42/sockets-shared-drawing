@@ -1,9 +1,15 @@
+const ID_PREFIX = 'USERDIV';
+
 window.addEventListener('load', () => {
   let drawing = false;
   const socket = io();
+
   socket.on('newClientConnection', data => console.log(data.description));
-  socket.on('clientDisconnect', data => console.log(data.description));
+  socket.on('clientDisconnect', data => {
+    document.body.removeChild(document.querySelector(`#${ID_PREFIX + data.id}`));
+  });
   socket.on('connectToRoom', data => console.log(data));
+
   const otherUsers = {};
   let otherUser;
   const canvas = document.getElementById('canvas');
@@ -37,11 +43,10 @@ window.addEventListener('load', () => {
       userCtx[data.id] = canvas.getContext('2d');
       let element = document.createElement('div');
       element.classList.add('userDiv');
-      element.id = data.id;
+      element.id = ID_PREFIX + data.id;
       document.body.appendChild(element);
-      ctx.move
     } else {
-      otherUser = document.querySelector(`#${data.id}`);
+      otherUser = document.querySelector(`#${ID_PREFIX + data.id}`);
       otherUser.style.top = `${Math.round(data.y * window.innerHeight)}px`;
       otherUser.style.left = `${Math.round(data.x * window.innerWidth)}px`;
       if (data.drawing) {
