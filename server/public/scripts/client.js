@@ -15,7 +15,8 @@ window.addEventListener('load', () => {
     socket.emit('mouse-time', {
       drawing: drawing,
       x: event.clientX / window.innerWidth,
-      y: event.clientY / window.innerHeight
+      y: event.clientY / window.innerHeight,
+      color: clientColor
     })
     if (drawing) {
       if (localDrawingState === false) {
@@ -45,7 +46,7 @@ window.addEventListener('load', () => {
   let drawingUsers = {};
   let userDrawingState = {};
   socket.on('newClientConnection', data => {
-    console.log(data.drawingData.length);
+    console.log(data.drawingData);
     let colors = data.clientColors;
     clientColor = data.clientColors[data.id];
     data.drawingData.forEach(data => {

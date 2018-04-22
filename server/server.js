@@ -22,8 +22,14 @@ io.on('connection', socket => {
 
   socket.on('mouse-time',data => {
     let dataPoint = {...data,id: socket.id};
-    drawing = [...drawing, dataPoint];
+    let userDrawing = drawing.filter(data => {
+      return (data.id === socket.id);
+    })
     socket.broadcast.emit('mouseMove',{...data, color: clientColors[socket.id], id: socket.id});
+    if (userDrawing[0] && dataPoint.drawing === false && userDrawing[userDrawing.length - 1].drawing === false){
+      return;
+    }
+    drawing = [...drawing, dataPoint];
   })
 
   socket.on('disconnect',() => {
