@@ -42,33 +42,33 @@ window.addEventListener('load', () => {
     }, { once: true });
   });
   console.log('script run...');
-  let userCtx = {};
+  let drawingUsers = {};
   let userDrawingState = {};
   socket.on('newClientConnection', data => {
     console.log(data.drawingData.length);
     let colors = data.clientColors;
     clientColor = data.clientColors[data.id];
     data.drawingData.forEach(data => {
-      if (!userCtx[data.id]) {
+      if (!drawingUsers[data.id]) {
         userDrawingState[data.id] = false;
-        userCtx[data.id] = canvas.getContext('2d');
+        drawingUsers[data.id] = true;
       } else {
         if (data.drawing) {
           if (userDrawingState[data.id] === false) {
-            userCtx[data.id].beginPath();
+            ctx.beginPath();
             console.log('beginning path',data.id)
             userDrawingState[data.id] = true;
           }
-          userCtx[data.id].strokeStyle = colors[data.id];
-          userCtx[data.id].lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
-          userCtx[data.id].stroke();
+          ctx.strokeStyle = colors[data.id];
+          ctx.lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+          ctx.stroke();
         } else {
           if (userDrawingState[data.id] === true) {
             console.log('closing path',data.id)
-            userCtx[data.id].closePath();
+            ctx.closePath();
           }
           userDrawingState[data.id] = false;
-          userCtx[data.id].moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+          ctx.moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
         }
       }
     })
@@ -80,7 +80,6 @@ window.addEventListener('load', () => {
   socket.on('mouseMove', data => {
     if (!otherUsers[data.id]) {
       otherUsers[data.id] = data;
-      userCtx[data.id] = canvas.getContext('2d');
       let element = document.createElement('div');
       element.classList.add('userDiv');
       element.id = ID_PREFIX + data.id;
@@ -93,19 +92,19 @@ window.addEventListener('load', () => {
       if (data.drawing) {
         if (userDrawingState[data.id] === false) {
           console.log('beginning path',data.id)
-          userCtx[data.id].beginPath();
+          ctx.beginPath();
           userDrawingState[data.id] = true;
         }
-        userCtx[data.id].strokeStyle = data.color;
-        userCtx[data.id].lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
-        userCtx[data.id].stroke();
+        ctx.strokeStyle = data.color;
+        ctx.lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+        ctx.stroke();
       } else {
         if (userDrawingState[data.id] === true) {
-          userCtx[data.id].closePath();
+          ctx.closePath();
           console.log('closing path',data.id);
         }
         userDrawingState[data.id] = false;
-        userCtx[data.id].moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+        ctx.moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
       }
     }
   })
