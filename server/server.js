@@ -3,6 +3,8 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+let drawing = [];
+
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
@@ -10,15 +12,18 @@ if (process.env.NODE_ENV !== 'production') {
 const PORT = process.env.PORT || 5000;
 
 let clients = 0;
-
+let clientColors = {};
 io.on('connection', socket => {
   clients++;
   console.log('A user connected.');
-  socket.emit('newClientConnection',{description: `Welcome! There are ${clients} clients connected!`,id: socket.id});
-  socket.broadcast.emit('newClientConnection',{description: clients + ' clients connected!'});
+  clientColors[socket.id] = `rgb(${Math.round(256 * Math.random())},${Math.round(256 * Math.random())},${Math.round(256 * Math.random())})`
+  socket.emit('newClientConnection',{description: `Welcome! There are ${clients} clients connected!`,id: socket.id, clientColors, drawingData: drawing});
+  socket.broadcast.emit('newClientBroadcast',{description: clients + ' clients connected!',clientColors});
 
   socket.on('mouse-time',data => {
-    socket.broadcast.emit('mouseMove',{...data,id: socket.id});
+    let dataPoint = {...data,id: socket.id};
+    drawing = [...drawing, dataPoint];
+    socket.broadcast.emit('mouseMove',{...data, color: clientColors[socket.id], id: socket.id});
   })
 
   socket.on('disconnect',() => {
