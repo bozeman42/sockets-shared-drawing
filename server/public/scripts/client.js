@@ -1,112 +1,84 @@
-const ID_PREFIX = 'USERDIV';
+const CANVAS_PREFIX = 'CANVASID';
+const DIV_PREFIX = 'DIVID'
 
 window.addEventListener('load', () => {
-  let drawing = false;
   const socket = io();
-  const otherUsers = {};
-  let otherUser;
-  let clientColor;
-  const canvas = document.getElementById('canvas');
-  canvas.height = window.innerHeight;
-  canvas.width = window.innerWidth;
-  const ctx = canvas.getContext('2d');
+  let drawing = false;
   let localDrawingState = false;
-  document.addEventListener('mousemove', _.throttle(event => {
-    socket.emit('mouse-time', {
-      drawing: drawing,
-      x: event.clientX / window.innerWidth,
-      y: event.clientY / window.innerHeight,
-      color: clientColor
-    })
-    if (drawing) {
-      if (localDrawingState === false) {
-        ctx.beginPath();
-        console.log('begin local path');
-      }
-      localDrawingState = true;
-      ctx.strokeStyle = clientColor
-      ctx.lineTo(event.clientX, event.clientY);
-      ctx.stroke();
-    } else {
-      if (localDrawingState === true) {
-        console.log('close local path');
-        ctx.closePath();
-      }
-      localDrawingState = false;
-      ctx.moveTo(event.clientX, event.clientY);
+  let clientLast = { x: 0, y: 0 };
+  canvases = {};
+  contexts = {};
+  socket.on('newClientConnection', (data) => {
+    for (client in data.drawing.clients) {
+      let canvas = document.createElement('canvas');
+      canvas.id = CANVAS_PREFIX + client;
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+      contexts[client] = canvas.getContext('2d');
+      contexts[client].strokeStyle = data.drawing.clients[client].color;
+      document.body.appendChild(canvas);
+      canvases[client] = document.getElementById(canvas.id);
+      data.drawing.paths[client].forEach(datapoint => {
+        if (datapoint.drawing) {
+          contexts[client].lineTo(Math.round(datapoint.x * window.innerWidth), Math.round(datapoint.y * window.innerHeight));
+          contexts[client].stroke();
+        }
+        contexts[client].moveTo(Math.round(datapoint.x * window.innerWidth), Math.round(datapoint.y * window.innerHeight));
+      })
     }
-  }, 20))
-  canvas.addEventListener('mousedown', () => {
-    drawing = true;
-    document.addEventListener('mouseup', () => {
-      drawing = false;
-    }, { once: true });
+    document.addEventListener('mousedown', () => {
+      drawing = true;
+      document.addEventListener('mouseup', () => {
+        drawing = false;
+      }, { once: true });
+    });
+    document.addEventListener('mousemove', _.throttle(event => {
+      socket.emit('mouse-time', {
+        drawing: drawing,
+        x: event.clientX / window.innerWidth,
+        y: event.clientY / window.innerHeight,
+      })
+    }, 20))
   });
-  console.log('script run...');
-  let drawingUsers = {};
-  let userDrawingState = {};
-  socket.on('newClientConnection', data => {
-    console.log(data.drawingData);
-    let colors = data.clientColors;
-    clientColor = data.clientColors[data.id];
-    data.drawingData.forEach(data => {
-      if (!drawingUsers[data.id]) {
-        userDrawingState[data.id] = false;
-        drawingUsers[data.id] = true;
-      } else {
-        if (data.drawing) {
-          if (userDrawingState[data.id] === false) {
-            ctx.beginPath();
-            console.log('beginning path',data.id)
-            userDrawingState[data.id] = true;
-          }
-          ctx.strokeStyle = colors[data.id];
-          ctx.lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
-          ctx.stroke();
-        } else {
-          if (userDrawingState[data.id] === true) {
-            console.log('closing path',data.id)
-            ctx.closePath();
-          }
-          userDrawingState[data.id] = false;
-          ctx.moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
-        }
-      }
-    })
-  });
+
   socket.on('clientDisconnect', data => {
-    document.body.removeChild(document.querySelector(`#${ID_PREFIX + data.id}`));
+    if (document.querySelector(`#${DIV_PREFIX + data.id}`)){
+      document.body.removeChild(document.querySelector(`#${DIV_PREFIX + data.id}`));
+    }
   });
-  socket.on('connectToRoom', data => console.log(data));
+
+  socket.on('newClientBroadcast', data => {
+    let canvas = document.createElement('canvas');
+    canvas.id = CANVAS_PREFIX + data.id;
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    contexts[data.id] = canvas.getContext('2d');
+    contexts[data.id].strokeStyle = data.color;
+    document.body.appendChild(canvas);
+    canvases[data.id] = document.getElementById(canvas.id);
+  })
+
   socket.on('mouseMove', data => {
-    if (!otherUsers[data.id]) {
-      otherUsers[data.id] = data;
-      let element = document.createElement('div');
-      element.classList.add('userDiv');
-      element.id = ID_PREFIX + data.id;
-      element.style.backgroundColor = data.color;
-      document.body.appendChild(element);
-    } else {
-      otherUser = document.querySelector(`#${ID_PREFIX + data.id}`);
-      otherUser.style.top = `${Math.round(data.y * window.innerHeight)}px`;
-      otherUser.style.left = `${Math.round(data.x * window.innerWidth)}px`;
-      if (data.drawing) {
-        if (userDrawingState[data.id] === false) {
-          console.log('beginning path',data.id)
-          ctx.beginPath();
-          userDrawingState[data.id] = true;
-        }
-        ctx.strokeStyle = data.color;
-        ctx.lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
-        ctx.stroke();
+    console.log(data.last);
+    if (data.id !== socket.id) {
+      if (!document.getElementById(DIV_PREFIX + data.id)) {
+        let element = document.createElement('div');
+        element.classList.add('userDiv');
+        element.id = DIV_PREFIX + data.id;
+        element.style.backgroundColor = data.color;
+        document.body.appendChild(element);
       } else {
-        if (userDrawingState[data.id] === true) {
-          ctx.closePath();
-          console.log('closing path',data.id);
-        }
-        userDrawingState[data.id] = false;
-        ctx.moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+        let otherUser = document.querySelector(`#${DIV_PREFIX + data.id}`);
+        otherUser.style.top = `${Math.round(data.y * window.innerHeight)}px`;
+        otherUser.style.left = `${Math.round(data.x * window.innerWidth)}px`;
       }
+    }
+    if (data.drawing) {
+
+      contexts[data.id].lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+      contexts[data.id].stroke();
+    } else {
+      contexts[data.id].moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
     }
   })
-})
+});
