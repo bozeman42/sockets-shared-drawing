@@ -20,7 +20,7 @@ io.on('connection', socket => {
   console.log(`A user connected. ${socket.id}`);
   drawing.clients[socket.id].color = `rgb(${Math.round(256 * Math.random())},${Math.round(256 * Math.random())},${Math.round(256 * Math.random())})`
   drawing.paths[socket.id] = [];
-  drawing.last[socket.id] = {};
+  drawing.last[socket.id] = {drawing: false};
   socket.emit('newClientConnection', {
     description: 'Welcome!',
     id: socket.id,
@@ -29,12 +29,16 @@ io.on('connection', socket => {
   socket.broadcast.emit('newClientBroadcast',{id: socket.id, color: drawing.clients[socket.id].color});
 
   socket.on('mouse-time', data => {
-    let dataPoint = { ...data, id: socket.id };
+    let datapoint = { ...data, id: socket.id };
     if (!drawing.paths[socket.id]){
       drawing.paths[socket.id] = [];
+      drawing.last[socket.id] = datapoint;
     }
-    if (!(drawing.paths[socket.id][0] && dataPoint.drawing === false && drawing.paths[socket.id][drawing.paths[socket.id].length - 1].drawing === false)) {
-      drawing.paths[socket.id] = [...drawing.paths[socket.id], dataPoint];
+    console.log(drawing.last[socket.id]);
+    if (drawing.paths[socket.id][0] && datapoint.drawing === true && drawing.last[socket.id].drawing === false) {
+      drawing.paths[socket.id] = [...drawing.paths[socket.id],drawing.last[socket.id], datapoint];
+    } else if (datapoint.drawing === true || (datapoint.drawing === false && drawing.last[socket.id] === true)) {
+      drawing.paths[socket.id] = [...drawing.paths[socket.id],datapoint];
     }
     let pathLength = 0;
     for (path in drawing.paths) {
@@ -43,14 +47,14 @@ io.on('connection', socket => {
     console.log(pathLength);
     io.sockets.emit('mouseMove', {
       ...data,
-      // last: drawing.last[socket.id],
+      last: drawing.last[socket.id],
       color: drawing.clients[socket.id].color,
-      id: socket.id
+      id: socket.id,
+      drawingData: drawing
     });
-    // drawing.last[socket.id] = {
-    //   ...drawing.last,
-    //   [dataPoint.id]: data
-    // }
+    drawing.last[socket.id] = {
+      ...datapoint
+    }
   })
 
   socket.on('disconnect', () => {

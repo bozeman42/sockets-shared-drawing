@@ -20,10 +20,12 @@ window.addEventListener('load', () => {
       canvases[client] = document.getElementById(canvas.id);
       data.drawing.paths[client].forEach(datapoint => {
         if (datapoint.drawing) {
+          
           contexts[client].lineTo(Math.round(datapoint.x * window.innerWidth), Math.round(datapoint.y * window.innerHeight));
           contexts[client].stroke();
+        } else {
+          contexts[client].moveTo(Math.round(datapoint.x * window.innerWidth), Math.round(datapoint.y * window.innerHeight));
         }
-        contexts[client].moveTo(Math.round(datapoint.x * window.innerWidth), Math.round(datapoint.y * window.innerHeight));
       })
     }
     document.addEventListener('mousedown', () => {
@@ -59,7 +61,7 @@ window.addEventListener('load', () => {
   })
 
   socket.on('mouseMove', data => {
-    console.log(data.last);
+    console.log(data);
     if (data.id !== socket.id) {
       if (!document.getElementById(DIV_PREFIX + data.id)) {
         let element = document.createElement('div');
@@ -75,6 +77,7 @@ window.addEventListener('load', () => {
     }
     if (data.drawing) {
 
+      contexts[data.id].moveTo(Math.round(data.last.x * window.innerWidth), Math.round(data.last.y * window.innerHeight));
       contexts[data.id].lineTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
       contexts[data.id].stroke();
     } else {
