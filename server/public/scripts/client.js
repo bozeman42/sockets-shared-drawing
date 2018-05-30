@@ -34,11 +34,14 @@ window.addEventListener('load', () => {
         drawing = false;
       }, { once: true });
     });
+
+    document.querySelector('#clear').addEventListener('click',clearHandler);
+
     document.addEventListener('mousemove', _.throttle(event => {
       socket.emit('mouse-time', {
         drawing: drawing,
         x: event.clientX / window.innerWidth,
-        y: event.clientY / window.innerHeight,
+        y: (event.clientY - 100) / window.innerHeight,
       })
     }, 20))
   });
@@ -61,7 +64,6 @@ window.addEventListener('load', () => {
   })
 
   socket.on('mouseMove', data => {
-    console.log(data);
     if (data.id !== socket.id) {
       if (!document.getElementById(DIV_PREFIX + data.id)) {
         let element = document.createElement('div');
@@ -82,6 +84,17 @@ window.addEventListener('load', () => {
       contexts[data.id].stroke();
     } else {
       contexts[data.id].moveTo(Math.round(data.x * window.innerWidth), Math.round(data.y * window.innerHeight));
+    }
+  })
+  function clearHandler(event) {
+    console.log('clear!!!');
+    socket.emit('clear');
+  }
+
+  socket.on('cleared',drawing => {
+    for (ctx in contexts) {
+      contexts[ctx].clearRect(0,0,canvases[ctx].width,canvases[ctx].height);
+      contexts[ctx].beginPath();
     }
   })
 });

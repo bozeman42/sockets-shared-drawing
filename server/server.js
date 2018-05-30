@@ -34,7 +34,7 @@ io.on('connection', socket => {
       drawing.paths[socket.id] = [];
       drawing.last[socket.id] = datapoint;
     }
-    console.log(drawing.last[socket.id]);
+    // console.log(drawing.last[socket.id]);
     if (drawing.paths[socket.id][0] && datapoint.drawing === true && drawing.last[socket.id].drawing === false) {
       drawing.paths[socket.id] = [...drawing.paths[socket.id],drawing.last[socket.id], datapoint];
     } else if (datapoint.drawing === true || (datapoint.drawing === false && drawing.last[socket.id] === true)) {
@@ -44,7 +44,7 @@ io.on('connection', socket => {
     for (path in drawing.paths) {
       pathLength += drawing.paths[path].length
     }
-    console.log(pathLength);
+    // console.log(pathLength);
     io.sockets.emit('mouseMove', {
       ...data,
       last: drawing.last[socket.id],
@@ -55,6 +55,15 @@ io.on('connection', socket => {
     drawing.last[socket.id] = {
       ...datapoint
     }
+  })
+
+  socket.on('clear',() => {
+    console.log("CLEARING",drawing);
+    for (path in drawing.paths) {
+      drawing.paths[path] = [];
+    }
+    console.log("CLEARED",drawing);
+    io.sockets.emit('cleared',drawing);
   })
 
   socket.on('disconnect', () => {
